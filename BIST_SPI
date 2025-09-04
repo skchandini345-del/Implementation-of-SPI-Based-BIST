@@ -1,0 +1,61 @@
+timescale 1ns / 1ps
+module BIST_SPI (
+    input clk, rst,                  // Clock & Reset
+    input [7:0] external_input,      // External input pattern
+    input pattern_select,            // 0 = LFSR, 1 = External input
+    input [1:0] SS,                  // Slave Select (operation select)
+    output test_pass,
+    output [4:0] Y
+);
+    wire [7:0] test_pattern;
+    wire [4:0] cut_output;
+    wire [4:0] misr_signature;
+    wire misr_done;
+    wire [4:0] spi_data;
+
+    // Test Pattern Generator
+    TPG tpg_inst (
+        .clk(clk),
+        .rst(rst),
+        .ext_pattern(external_input),
+        .sel(pattern_select),
+        .pattern(test_pattern)
+    );
+
+    // SPI Master
+    SPI_Master spi_master_inst (
+        .clk(clk),
+        .rst(rst),
+        .MOSI(test_pattern),
+        .MISO(spi_data)
+    );
+
+    // SPI Slave
+    SPI_Slave spi_slave_inst (
+        .clk(clk),
+        .rst(rst),
+        .MOSI(test_pattern),
+        .SS(SS),                    // Slave Select input
+        .MISO(spi_data),
+        .Y(cut_output)
+    );
+
+    assign Y = cut_output;
+
+    // MISR
+    MISR misr_inst (
+        .clk(clk),
+        .rst(rst),
+        .Y(cut_output),
+        .signature(misr_signature),
+        .done(misr_done)
+    );
+
+    // ROM
+    ROM rom_inst (
+        .signature(misr_signature),
+        .cut_output(cut_output),
+        .done(misr_done),
+        .match(test_pass)
+    );
+endmodule
