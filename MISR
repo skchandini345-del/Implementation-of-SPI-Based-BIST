@@ -1,0 +1,27 @@
+module MISR (
+    input clk, rst,
+    input [4:0] Y,
+    output reg [4:0] signature,
+    output reg done
+);
+    reg [3:0] count;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            signature <= 5'b00001;
+            done <= 0;
+            count <= 4'b0000;
+        end else begin
+            signature[4] <= signature[3];
+            signature[3] <= signature[2];
+            signature[2] <= signature[1]; 
+            signature[1] <= signature[0] ^ signature[4];
+            signature[0] <= Y[0] ^ signature[4];
+
+            if (count == 4'b1111)
+                done <= 1;
+            else
+                count <= count + 1;
+        end
+    end
+endmodule
