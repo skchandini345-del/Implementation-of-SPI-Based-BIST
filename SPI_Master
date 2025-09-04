@@ -1,0 +1,13 @@
+module SPI_Master (
+    input clk, rst,
+    input [7:0] MOSI,
+    input [4:0] MISO,
+    output reg [7:0] data_out 
+);
+    always @(posedge clk or posedge rst) begin
+        if (rst) 
+            data_out <= 8'b0;
+        else 
+            data_out <= MOSI;
+    end
+endmodule
