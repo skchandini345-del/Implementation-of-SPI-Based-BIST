@@ -1,0 +1,13 @@
+module ROM (
+    input [4:0] signature,
+    input [4:0] cut_output,
+    input done,
+    output reg match
+);
+    always @(*) begin
+        if (done)
+            match = (signature == cut_output) ? 1'b1 : 1'b0;
+        else
+            match = 1'b0;
+    end
+endmodule
