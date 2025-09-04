@@ -1,0 +1,25 @@
+module SPI_Slave (
+    input clk, rst,
+    input [7:0] MOSI,
+    input [1:0] SS,               // Slave Select (used as opcode)
+    output reg [4:0] MISO,
+    output [4:0] Y
+);
+    wire [4:0] Y_internal;
+
+    CUT cut_inst (
+        .A(MOSI[3:0]), 
+        .B(MOSI[7:4]), 
+        .op(SS),                  // Use SS to select CUT operation
+        .Y(Y_internal)
+    );
+
+    assign Y = Y_internal;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst)
+            MISO <= 5'b00000;
+        else
+            MISO <= Y_internal;
+    end
+endmodule
